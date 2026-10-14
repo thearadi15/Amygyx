@@ -1,0 +1,3 @@
+asset,asset_value_usd,annual_event_probability,impact_fraction,control,annual_control_cost_usd,risk_reduction_fraction
+payments,10000000,0.1,0.5,offline-backups,50000,0.8
+payments,10000000,0.1,0.5,endpoint-monitoring,100000,0.3

@@ -1,0 +1,5 @@
+hostname synthetic-router
+enable password not-a-real-secret
+line vty 0 4
+ transport input telnet
+ snmp-server community public RO
