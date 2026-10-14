@@ -1,4 +1,6 @@
-# Cyber Intelligence Platform
+# AMYGYX — AI-Powered Cyber Intelligence
+
+> **Sense the Threat. Reveal the Truth.**
 
 A unified cybersecurity intelligence platform for small and medium businesses. The product is designed as one analyst workspace backed by specialized, independently developed security capabilities and shared identity, findings, investigations, audit, and reporting contracts.
 

@@ -16,7 +16,8 @@ describe('App navigation', () => {
   it('keeps overview focused and exposes separate workspace navigation', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: /security operations at a glance/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /AMYGYX AI-Powered Cyber Intelligence/i })).toBeInTheDocument();
+    expect(screen.getByText('Sense the Threat. Reveal the Truth.')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: /primary/i })).toBeInTheDocument();
     expect(screen.getByRole('complementary', { name: /platform navigation/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /capability library/i })).toHaveAttribute('href', '#/capabilities');
