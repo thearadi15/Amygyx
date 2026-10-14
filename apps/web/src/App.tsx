@@ -129,7 +129,7 @@ const routeTitles: Record<RouteId, string> = {
 };
 
 const routeDescriptions: Record<RouteId, string> = {
-  overview: 'A shared workspace for authorized offline security analysis and analyst-led investigations.',
+  overview: 'AI-powered cyber intelligence for authorized analysis and analyst-led investigations.',
   capabilities: 'Choose a local analysis workflow. Every profile documents what it checks and what it does not.',
   integrations: 'Production connectors are not configured. Review what each live capability requires before enabling it.',
   findings: 'Review evidence-backed signals contributed by the analysis workspaces.',
@@ -255,9 +255,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Platform navigation">
-        <a className="brand" href="#/overview" aria-label="CIP security platform overview">
-          <span className="brand-mark" aria-hidden="true">C</span>
-          <span className="brand-name">CIP<span>SECURITY</span></span>
+        <a className="brand" href="#/overview" aria-label="AMYGYX AI-powered cyber intelligence home">
+          <span className="brand-mark" aria-hidden="true">A</span>
+          <span className="brand-name">AMYGYX<span>CYBER INTELLIGENCE</span></span>
         </a>
         <nav className="nav-scroll" aria-label="Primary">
           <p className="nav-label">WORKSPACE</p>
@@ -302,8 +302,9 @@ export default function App() {
         <section className="page-header">
           <div>
             <p className="eyebrow">{route === 'overview' ? 'UNIFIED SECURITY OPERATIONS' : 'WORKSPACE'}</p>
-            <h1>{route === 'overview' ? <>Security operations<br /><span>at a glance.</span></> : pageHeading}</h1>
+            <h1>{route === 'overview' ? <>AMYGYX<br /><span>AI-Powered Cyber Intelligence</span></> : pageHeading}</h1>
             <p className="page-description">{routeDescriptions[route]}</p>
+            {route === 'overview' && <p className="brand-tagline">Sense the Threat. Reveal the Truth.</p>}
           </div>
           {activeModule && (
             <span className={`status-pill${activeModule.status === 'LIMITED' ? ' limited' : ''}`}>
@@ -436,7 +437,7 @@ export default function App() {
         {route === 'ipsec' && <OfflineCapabilityPanel profileId="ipsec" />}
 
         <footer className="page-footer">
-          <span>Cyber Intelligence Platform</span>
+          <span>AMYGYX · AI-Powered Cyber Intelligence</span>
           <span>Local prototype <i /> No live telemetry or automated response</span>
         </footer>
       </main>
