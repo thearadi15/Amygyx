@@ -1,0 +1,11 @@
+From: Synthetic Executive <executive@synthetic.example.test>
+Reply-To: Synthetic Account Team <account@lookalike.synthetic.example.test>
+Return-Path: <bounces@synthetic.example.test>
+Subject: Synthetic urgent account review
+Authentication-Results: mx.synthetic.example.test; spf=fail; dkim=pass; dmarc=softfail
+Content-Type: text/plain; charset=utf-8
+
+This synthetic message includes a test-only IP-literal link:
+http://192.0.2.25/secure-login
+
+No real customer or account data is included.

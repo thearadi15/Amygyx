@@ -1,0 +1,54 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# JavaScript / TypeScript
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs and runtime files
+*.log
+*.pid
+*.sock
+
+# Local data and artifacts
+.local-data/
+data/
+artifacts/
+*.sqlite3
+*.db
+
+# Test output
+playwright-report/
+test-results/

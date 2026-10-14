@@ -1,0 +1,7 @@
+From: Service Updates <updates@synthetic.example.test>
+To: Analyst <analyst@synthetic.example.test>
+Subject: Synthetic routine maintenance notice
+Authentication-Results: mx.synthetic.example.test; spf=pass; dkim=pass; dmarc=pass
+Content-Type: text/plain; charset=utf-8
+
+This is a synthetic routine service update for local analyzer testing.

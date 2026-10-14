@@ -1,0 +1,3 @@
+transaction_id,sender_address,recipient_address,amount_btc
+0000000000000000000000000000000000000000000000000000000000000020,synthetic-routine-sender,synthetic-routine-recipient-1,0.015
+0000000000000000000000000000000000000000000000000000000000000021,synthetic-routine-sender,synthetic-routine-recipient-2,0.02
