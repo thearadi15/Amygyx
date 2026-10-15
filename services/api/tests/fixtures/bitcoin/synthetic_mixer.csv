@@ -1,0 +1,6 @@
+transaction_id,sender_address,recipient_address,amount_btc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,mixer-sender,mixer-output-1,0.10000000
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,mixer-sender,mixer-output-2,0.10000000
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,mixer-sender,mixer-output-3,0.10000000
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,mixer-sender,mixer-output-4,0.10000000
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,mixer-sender,mixer-output-5,0.10000000

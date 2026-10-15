@@ -123,4 +123,5 @@ async def analyze_uploaded_transfers(
         ruleset_version=BITCOIN_RULESET_VERSION,
         rows_processed=analysis.rows_processed,
         indicators=response_indicators,
+        analytics_summary=analysis.analytics_summary,
     )

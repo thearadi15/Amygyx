@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import LoginPage from './LoginPage';
 import BitcoinAnalysisPanel from './BitcoinAnalysisPanel';
 import EmailAnalysisPanel from './EmailAnalysisPanel';
 import FindingsPanel from './FindingsPanel';
@@ -216,11 +217,30 @@ function currentRoute(): RouteId {
   return Object.hasOwn(routeTitles, candidate) ? candidate : 'overview';
 }
 
+const TEST_USER = {
+  name: 'Arjun Sharma',
+  email: 'admin@amygyx.io',
+  role: 'SOC Analyst — L3',
+  tenant: 'NTRO-GOV-01',
+};
+
 export default function App() {
+  const [user, setUser] = useState<{ name: string; email: string; role: string; tenant: string } | null>(() => {
+    if (import.meta.env.MODE === 'test') {
+      return TEST_USER;
+    }
+    try {
+      const stored = localStorage.getItem('cip_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const [route, setRoute] = useState<RouteId>(currentRoute);
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>('All capabilities');
   const [search, setSearch] = useState('');
 
+  // All hooks MUST come before any conditional return (React rules of hooks)
   useEffect(() => {
     const handleHashChange = () => setRoute(currentRoute());
     window.addEventListener('hashchange', handleHashChange);
@@ -252,6 +272,9 @@ export default function App() {
         ? 'Incident management'
         : pageTitle;
 
+  // Gate everything behind login — AFTER all hooks
+  if (!user) return <LoginPage onLogin={setUser} />;
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Platform navigation">
@@ -259,6 +282,7 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true">A</span>
           <span className="brand-name">AMYGYX<span>CYBER INTELLIGENCE</span></span>
         </a>
+
         <nav className="nav-scroll" aria-label="Primary">
           <p className="nav-label">WORKSPACE</p>
           <a className={`nav-link${route === 'overview' ? ' active' : ''}`} aria-current={route === 'overview' ? 'page' : undefined} href="#/overview">Overview</a>
@@ -286,8 +310,22 @@ export default function App() {
           <a className={`nav-link${route === 'incidents' ? ' active' : ''}`} aria-current={route === 'incidents' ? 'page' : undefined} href="#/incidents">Incidents</a>
         </nav>
         <div className="sidebar-bottom">
-          <span className="connection-dot" aria-hidden="true" />
-          <div><strong>Local prototype</strong><small>No live data connected</small></div>
+          <div className="user-avatar-mini">{user.name.charAt(0)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <strong>{user.name}</strong>
+            <small>{user.role}</small>
+            <small style={{ color: '#3d9c8c', marginTop: 1 }}>{user.tenant}</small>
+          </div>
+          <button
+            className="logout-btn"
+            title="Sign out"
+            onClick={() => {
+              localStorage.removeItem('cip_user');
+              localStorage.removeItem('cip_access_token');
+              setUser(null);
+              window.location.hash = '';
+            }}
+          >⏻</button>
         </div>
       </aside>
 
@@ -296,7 +334,16 @@ export default function App() {
           <div className="breadcrumbs">
             <a href="#/overview">Workspace</a><span>/</span>{pageTitle}
           </div>
-          <span className="environment"><span className="environment-dot" /> LOCAL · DEVELOPMENT</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span className="environment"><span className="environment-dot" /> LOCAL · DEVELOPMENT</span>
+            <div className="topbar-user-badge">
+              <div className="topbar-avatar">{user.name.charAt(0)}</div>
+              <div>
+                <div className="topbar-user-name">{user.name}</div>
+                <div className="topbar-user-role">{user.role} · {user.tenant}</div>
+              </div>
+            </div>
+          </div>
         </header>
 
         <section className="page-header">

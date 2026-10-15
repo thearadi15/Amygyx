@@ -1,0 +1,7 @@
+transaction_id,sender_address,recipient_address,amount_btc
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,co-spend-sender-1,co-spend-output-1,0.10
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,co-spend-sender-2,co-spend-output-2,0.10
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,co-spend-sender-3,co-spend-output-3,0.10
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,cluster-b-sender-1,cluster-b-output-1,0.05
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,cluster-b-sender-2,cluster-b-output-2,0.05
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,cluster-b-sender-3,cluster-b-output-3,0.05

@@ -25,9 +25,17 @@ app = FastAPI(
 )
 
 # Keep origins explicit. Do not use wildcard origins when credentials are enabled.
+allowed_origins = {
+    settings.web_origin,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+}
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.web_origin],
+    allow_origins=sorted(allowed_origins),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],

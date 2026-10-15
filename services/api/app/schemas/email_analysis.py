@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -16,7 +16,7 @@ class EmailIndicatorRead(BaseModel):
 
     rule_id: str
     description: str
-    evidence: dict[str, str]
+    evidence: dict[str, Any]
     severity: Severity
 
 
@@ -36,3 +36,11 @@ class EmailAnalysisRead(BaseModel):
     authentication_results_source: Literal["unverified_message_header"]
     indicators: list[EmailIndicatorRead]
     finding_id: str | None
+    origin_ip: str | None = None
+    origin_country: str | None = None
+    origin_city: str | None = None
+    origin_asn: str | None = None
+    is_vpn_tor: bool = False
+    bec_risk_score: float = 0.0
+    urgency_score: float = 0.0
+    lookalike_detected: bool = False

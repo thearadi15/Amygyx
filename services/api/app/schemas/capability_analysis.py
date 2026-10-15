@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -15,7 +15,7 @@ class CapabilityIndicatorRead(BaseModel):
     rule_id: str
     description: str
     severity: Literal["informational", "low", "medium", "high"]
-    evidence: dict[str, str | int | float | bool]
+    evidence: dict[str, Any]
     finding_id: str
 
 
@@ -28,5 +28,5 @@ class CapabilityAnalysisRead(BaseModel):
     result: Literal["no_indicators", "review_required"]
     ruleset_version: str
     records_processed: int
-    summary: dict[str, str | int | float | bool]
+    summary: dict[str, Any]
     indicators: list[CapabilityIndicatorRead]

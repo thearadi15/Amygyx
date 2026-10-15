@@ -143,3 +143,62 @@ def test_bitcoin_findings_are_tenant_scoped(api_client: TestClient) -> None:
 def test_analyzer_rejects_header_only_file() -> None:
     with pytest.raises(InvalidBitcoinData, match="at least one transfer row"):
         analyze_bitcoin_transfers(b"transaction_id,sender_address,recipient_address,amount_btc\n")
+
+
+def test_cospend_entity_cluster_detected() -> None:
+    """SIH26146: Union-Find co-spend heuristic fires when multiple senders share a txid."""
+    result = analyze_bitcoin_transfers(
+        (FIXTURES / "synthetic_cospend_cluster.csv").read_bytes()
+    )
+    rule_ids = {item.rule_id for item in result.indicators}
+    assert "bitcoin.entity-cluster-detected" in rule_ids
+    cluster_ind = next(i for i in result.indicators if i.rule_id == "bitcoin.entity-cluster-detected")
+    assert cluster_ind.severity == "medium"
+    assert cluster_ind.evidence["cluster_count"] >= 1
+    assert cluster_ind.evidence["largest_cluster_size"] >= 3
+    assert cluster_ind.evidence["method"] == "union_find_co_spend_heuristic"
+    assert result.analytics_summary is not None
+    assert result.analytics_summary["entity_clusters_detected"] >= 1
+
+
+def test_peeling_chain_detected() -> None:
+    """SIH26146: Peeling chain detector fires on single-in single-out relay hops."""
+    result = analyze_bitcoin_transfers(
+        (FIXTURES / "synthetic_peeling_chain.csv").read_bytes()
+    )
+    rule_ids = {item.rule_id for item in result.indicators}
+    assert "bitcoin.peeling-chain-detected" in rule_ids
+    peel_ind = next(i for i in result.indicators if i.rule_id == "bitcoin.peeling-chain-detected")
+    assert peel_ind.severity == "medium"
+    assert peel_ind.evidence["peeling_hop_count"] >= 2
+    assert peel_ind.evidence["detection_pattern"] == "single_in_single_out_relay_node"
+    assert result.analytics_summary is not None
+    assert result.analytics_summary["peeling_chain_hops_detected"] >= 2
+
+
+def test_mixer_tumbler_equal_output_detected() -> None:
+    """SIH26146: Equal-output mixer/tumbler detector fires on CoinJoin-style transaction."""
+    result = analyze_bitcoin_transfers(
+        (FIXTURES / "synthetic_mixer.csv").read_bytes()
+    )
+    rule_ids = {item.rule_id for item in result.indicators}
+    assert "bitcoin.mixer-tumbler-equal-output" in rule_ids
+    mixer_ind = next(i for i in result.indicators if i.rule_id == "bitcoin.mixer-tumbler-equal-output")
+    assert mixer_ind.severity == "high"
+    assert mixer_ind.evidence["equal_output_tx_count"] >= 1
+    assert mixer_ind.evidence["detection_pattern"] == "equal_output_split"
+    assert result.analytics_summary is not None
+    assert result.analytics_summary["mixer_equal_output_tx_count"] >= 1
+
+
+def test_routine_transfers_have_no_clustering_or_peeling() -> None:
+    """Single-input transactions (one sender per txid) must NOT trigger clustering."""
+    result = analyze_bitcoin_transfers(
+        (FIXTURES / "synthetic_routine.csv").read_bytes()
+    )
+    rule_ids = {item.rule_id for item in result.indicators}
+    assert "bitcoin.entity-cluster-detected" not in rule_ids
+    assert "bitcoin.peeling-chain-detected" not in rule_ids
+    assert "bitcoin.mixer-tumbler-equal-output" not in rule_ids
+    assert result.analytics_summary is not None
+    assert result.analytics_summary["entity_clusters_detected"] == 0

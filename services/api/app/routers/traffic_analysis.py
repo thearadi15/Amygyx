@@ -123,4 +123,5 @@ async def analyze_uploaded_flows(
         ruleset_version=TRAFFIC_RULESET_VERSION,
         rows_processed=analysis.rows_processed,
         indicators=response_indicators,
+        threat_summary=analysis.threat_summary,
     )

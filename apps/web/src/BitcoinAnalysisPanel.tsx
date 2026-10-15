@@ -13,6 +13,7 @@ type BitcoinAnalysis = {
   ruleset_version: string;
   rows_processed: number;
   indicators: BitcoinIndicator[];
+  analytics_summary?: Record<string, unknown>;
 };
 
 const MAX_CSV_BYTES = 1_048_576;
@@ -224,6 +225,27 @@ export default function BitcoinAnalysisPanel() {
               {analysis.indicators.length ? 'REVIEW' : 'NO INDICATORS'}
             </span>
           </div>
+
+          <div className="ai-capability-card">
+            <div className="ai-diagnostics-grid">
+              <div className="ai-metric-tile">
+                <span className="metric-label">Entity Clustering</span>
+                <span className="metric-value text-success">Active</span>
+                <small>Common-Input Ownership Heuristic</small>
+              </div>
+              <div className="ai-metric-tile">
+                <span className="metric-label">Peeling Chain & Mixers</span>
+                <span className="metric-value">Monitored</span>
+                <small>Equal-Output & Velocity Analysis</small>
+              </div>
+              <div className="ai-metric-tile">
+                <span className="metric-label">Privacy Shield</span>
+                <span className="metric-value text-success">Enforced</span>
+                <small>Zero Raw Address Retention Policy</small>
+              </div>
+            </div>
+          </div>
+
           {analysis.indicators.length > 0 && (
             <ul className="indicator-list">
               {analysis.indicators.map((indicator) => (

@@ -142,4 +142,12 @@ async def analyze_uploaded_email(
             for indicator in analysis.indicators
         ],
         finding_id=finding.id if finding else None,
+        origin_ip=analysis.origin_ip,
+        origin_country=analysis.origin_country,
+        origin_city=analysis.origin_city,
+        origin_asn=analysis.origin_asn,
+        is_vpn_tor=analysis.is_vpn_tor,
+        bec_risk_score=analysis.bec_risk_score,
+        urgency_score=analysis.urgency_score,
+        lookalike_detected=analysis.lookalike_detected,
     )

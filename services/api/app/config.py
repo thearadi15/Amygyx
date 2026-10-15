@@ -60,9 +60,13 @@ class Settings(BaseSettings):
             raise ValueError("OIDC_JWKS_URL must be an HTTPS URL.")
         return value
 
+    database_url_override: str | None = Field(default=None, alias="DATABASE_URL")
+
     @property
     def database_url(self) -> str:
-        """Build a PostgreSQL connection string for the local environment."""
+        """Build a PostgreSQL connection string or use DATABASE_URL override."""
+        if self.database_url_override:
+            return self.database_url_override
 
         return (
             "postgresql+psycopg://"

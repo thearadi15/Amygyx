@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -15,7 +15,7 @@ class TrafficIndicatorRead(BaseModel):
     rule_id: str
     description: str
     severity: Literal["low", "medium", "high"]
-    evidence: dict[str, str | int]
+    evidence: dict[str, Any]
     finding_id: str
 
 
@@ -28,3 +28,4 @@ class TrafficAnalysisRead(BaseModel):
     ruleset_version: str
     rows_processed: int
     indicators: list[TrafficIndicatorRead]
+    threat_summary: dict[str, Any] | None = None
