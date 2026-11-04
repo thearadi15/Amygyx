@@ -1,6 +1,6 @@
 """Database models and engine configuration."""
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.config import get_settings
@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
     """Base declarative class for all SQLAlchemy models."""
 
 
-def _init_engine():
+def _init_engine() -> Engine:
     db_url = settings.database_url
     if db_url.startswith("sqlite"):
         return create_engine(db_url, connect_args={"check_same_thread": False}, future=True)

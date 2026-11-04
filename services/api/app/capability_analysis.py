@@ -120,8 +120,6 @@ def _baseline_severity(value: str) -> Literal["informational", "low", "medium", 
     return "low"
 
 
-
-
 # =============================================================================
 # Shared AI / ML helper functions (all pure numpy / scipy – no network calls)
 # =============================================================================
@@ -165,9 +163,7 @@ def _compute_mfcc_features(
     mel_max = 2595.0 * np.log10(1.0 + f_max / 700.0)
     mel_pts = np.linspace(mel_min, mel_max, n_mels + 2)
     hz_pts = 700.0 * (10.0 ** (mel_pts / 2595.0) - 1.0)
-    bin_pts = np.clip(
-        np.floor((n_fft + 1) * hz_pts / sample_rate).astype(int), 0, fft_bins - 1
-    )
+    bin_pts = np.clip(np.floor((n_fft + 1) * hz_pts / sample_rate).astype(int), 0, fft_bins - 1)
     filterbank = np.zeros((n_mels, fft_bins))
     for m in range(1, n_mels + 1):
         f_lo, c, r = bin_pts[m - 1], bin_pts[m], bin_pts[m + 1]
@@ -178,9 +174,7 @@ def _compute_mfcc_features(
 
     # Log-mel energies → DCT → MFCCs
     log_mel = np.log(spectra @ filterbank.T + 1e-10)  # (n_frames, n_mels)
-    dct_mat = np.cos(
-        np.pi / n_mels * np.outer(np.arange(n_mfcc), np.arange(0.5, n_mels))
-    )
+    dct_mat = np.cos(np.pi / n_mels * np.outer(np.arange(n_mfcc), np.arange(0.5, n_mels)))
     mfccs = log_mel @ dct_mat.T  # (n_frames, n_mfcc)
 
     # F0 via autocorrelation (use first 1 s of audio)
@@ -256,6 +250,7 @@ def _cusum_change_point(values: list[float], k_factor: float = 0.5) -> int | Non
         if s > h:
             return i
     return None
+
 
 # -----------------------------------------------------------------------------
 # Module 02 · SIH26105: Cyber Risk Quantification & Investment Optimization
@@ -531,21 +526,18 @@ def analyze_network_forecast(data: bytes) -> CapabilityAnalysis:
     hw_forecast, hw_level, hw_trend, hw_smoothed = _holt_winters_double(
         values, alpha=0.35, beta=0.15
     )
-    hw_residuals = [abs(a - s) for a, s in zip(values, hw_smoothed)]
+    hw_residuals = [
+        abs(actual - smoothed) for actual, smoothed in zip(values, hw_smoothed, strict=True)
+    ]
     hw_mae = sum(hw_residuals) / len(hw_residuals)
 
     # ── CUSUM Change-Point Detection ─────────────────────────────────────────
     cusum_idx = _cusum_change_point(values, k_factor=0.5)
-    cusum_change_ts: str | None = (
-        str(timestamps_list[cusum_idx]) if cusum_idx is not None else None
-    )
+    cusum_change_ts: str | None = str(timestamps_list[cusum_idx]) if cusum_idx is not None else None
 
     # Ensemble projection: 40% OLS + 60% Holt-Winters
     predicted = max(0.0, 0.4 * predicted_ols + 0.6 * hw_forecast)
-    elevated = (
-        (slope > 0 or hw_trend > 0)
-        and predicted > y_mean + 2 * residual_spread
-    )
+    elevated = (slope > 0 or hw_trend > 0) and predicted > y_mean + 2 * residual_spread
 
     # K=5 World Model rollout (HW-extrapolated with OLS damping)
     k_rollouts: list[float] = []
@@ -1014,48 +1006,46 @@ def analyze_ipsec_configuration(data: bytes) -> CapabilityAnalysis:
         c = cfg.lower()
         return [
             float("voip" in c or "sip" in c or ":5060" in c or ":5061" in c),  # voip port
-            float("rtp" in c or ":5004" in c or ":5005" in c),                  # rtp
+            float("rtp" in c or ":5004" in c or ":5005" in c),  # rtp
             float("video" in c or "rtsp" in c or ":554" in c or ":1935" in c),  # video
             float("database" in c or ":1433" in c or ":3306" in c or ":5432" in c),  # db
             float(":4444" in c or ":8080" in c or ":1080" in c or "beacon" in c),  # c2
-            float("aes" in c),                                                   # AES cipher
-            float("sha256" in c or "sha2" in c),                                # SHA-2
-            float("tunnel" in c),                                                # tunnel mode
-            float("transport" in c),                                             # transport mode
-            float("esp" in c),                                                   # ESP explicit
+            float("aes" in c),  # AES cipher
+            float("sha256" in c or "sha2" in c),  # SHA-2
+            float("tunnel" in c),  # tunnel mode
+            float("transport" in c),  # transport mode
+            float("esp" in c),  # ESP explicit
         ]
 
     # Synthetic training data (feature vector, label)
     _TRAIN: list[tuple[list[float], str]] = [
-        ([0,0,0,0,0,1,1,1,0,1], "HTTPS_WEB"),
-        ([0,0,0,0,0,1,1,1,0,1], "HTTPS_WEB"),
-        ([0,0,0,0,0,1,0,1,0,1], "HTTPS_WEB"),
-        ([0,0,0,0,0,0,0,1,0,0], "HTTPS_WEB"),
-        ([1,0,0,0,0,1,1,0,1,1], "VOIP_RTP"),
-        ([1,1,0,0,0,1,1,0,1,1], "VOIP_RTP"),
-        ([1,1,0,0,0,0,1,0,1,0], "VOIP_RTP"),
-        ([0,1,0,0,0,1,1,0,1,1], "VOIP_RTP"),
-        ([0,0,1,0,0,1,1,1,0,1], "VIDEO_STREAM"),
-        ([0,0,1,0,0,1,0,1,0,1], "VIDEO_STREAM"),
-        ([0,1,1,0,0,1,1,1,0,1], "VIDEO_STREAM"),
-        ([0,0,1,0,0,0,0,1,0,0], "VIDEO_STREAM"),
-        ([0,0,0,1,0,1,1,1,0,1], "DATABASE"),
-        ([0,0,0,1,0,1,0,1,0,1], "DATABASE"),
-        ([0,0,0,1,0,0,0,1,0,0], "DATABASE"),
-        ([0,0,0,1,0,1,1,0,1,1], "DATABASE"),
-        ([0,0,0,0,1,0,0,0,1,0], "SUSPICIOUS_C2"),
-        ([0,0,0,0,1,0,0,1,0,0], "SUSPICIOUS_C2"),
-        ([0,0,0,0,1,1,0,0,1,0], "SUSPICIOUS_C2"),
-        ([0,0,0,0,1,0,1,0,1,0], "SUSPICIOUS_C2"),
+        ([0, 0, 0, 0, 0, 1, 1, 1, 0, 1], "HTTPS_WEB"),
+        ([0, 0, 0, 0, 0, 1, 1, 1, 0, 1], "HTTPS_WEB"),
+        ([0, 0, 0, 0, 0, 1, 0, 1, 0, 1], "HTTPS_WEB"),
+        ([0, 0, 0, 0, 0, 0, 0, 1, 0, 0], "HTTPS_WEB"),
+        ([1, 0, 0, 0, 0, 1, 1, 0, 1, 1], "VOIP_RTP"),
+        ([1, 1, 0, 0, 0, 1, 1, 0, 1, 1], "VOIP_RTP"),
+        ([1, 1, 0, 0, 0, 0, 1, 0, 1, 0], "VOIP_RTP"),
+        ([0, 1, 0, 0, 0, 1, 1, 0, 1, 1], "VOIP_RTP"),
+        ([0, 0, 1, 0, 0, 1, 1, 1, 0, 1], "VIDEO_STREAM"),
+        ([0, 0, 1, 0, 0, 1, 0, 1, 0, 1], "VIDEO_STREAM"),
+        ([0, 1, 1, 0, 0, 1, 1, 1, 0, 1], "VIDEO_STREAM"),
+        ([0, 0, 1, 0, 0, 0, 0, 1, 0, 0], "VIDEO_STREAM"),
+        ([0, 0, 0, 1, 0, 1, 1, 1, 0, 1], "DATABASE"),
+        ([0, 0, 0, 1, 0, 1, 0, 1, 0, 1], "DATABASE"),
+        ([0, 0, 0, 1, 0, 0, 0, 1, 0, 0], "DATABASE"),
+        ([0, 0, 0, 1, 0, 1, 1, 0, 1, 1], "DATABASE"),
+        ([0, 0, 0, 0, 1, 0, 0, 0, 1, 0], "SUSPICIOUS_C2"),
+        ([0, 0, 0, 0, 1, 0, 0, 1, 0, 0], "SUSPICIOUS_C2"),
+        ([0, 0, 0, 0, 1, 1, 0, 0, 1, 0], "SUSPICIOUS_C2"),
+        ([0, 0, 0, 0, 1, 0, 1, 0, 1, 0], "SUSPICIOUS_C2"),
     ]
 
     from sklearn.tree import DecisionTreeClassifier
 
     X_train = np.array([f for f, _ in _TRAIN], dtype=float)
     y_train = np.array([_LABEL_MAP[lbl] for _, lbl in _TRAIN])
-    _dtc = DecisionTreeClassifier(
-        max_depth=4, random_state=42, class_weight="balanced"
-    )
+    _dtc = DecisionTreeClassifier(max_depth=4, random_state=42, class_weight="balanced")
     _dtc.fit(X_train, y_train)
 
     x_query = np.array([_esp_features(text)], dtype=float)
@@ -1205,9 +1195,7 @@ def analyze_voice_audio(data: bytes) -> CapabilityAnalysis:
 
     # ── Genuine AI: MFCC + F0 + IsolationForest Anomaly Detection ──────────
     # Frame-level MFCC features (mel filterbank + DCT) — standard ASR pipeline
-    mfccs, f0_hz, f0_confidence, mfcc_variance = _compute_mfcc_features(
-        audio_arr, sample_rate
-    )
+    mfccs, f0_hz, f0_confidence, mfcc_variance = _compute_mfcc_features(audio_arr, sample_rate)
     # Delta-MFCCs (velocity coefficients for temporal dynamics)
     delta_mfccs = np.diff(mfccs, axis=0, prepend=mfccs[:1])
     frame_features = np.hstack([mfccs, delta_mfccs])  # (n_frames, 26)
@@ -1221,12 +1209,18 @@ def analyze_voice_audio(data: bytes) -> CapabilityAnalysis:
     # spectral flatness (Wiener) + vocoder HF/MF ratio + MFCC IsolationForest anomaly
     risk_score = 0
     if silent_fraction < 0.90:
-        risk_score = int(min(98, max(8,
-            (spectral_flatness * 120)
-            + (vocoder_ratio * 30)
-            + (anomalous_frame_fraction * 50)
-            + 8
-        )))
+        risk_score = int(
+            min(
+                98,
+                max(
+                    8,
+                    (spectral_flatness * 120)
+                    + (vocoder_ratio * 30)
+                    + (anomalous_frame_fraction * 50)
+                    + 8,
+                ),
+            )
+        )
         if risk_score >= 55:
             indicators.append(
                 CapabilityIndicator(

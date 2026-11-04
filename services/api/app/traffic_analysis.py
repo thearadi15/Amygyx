@@ -333,9 +333,7 @@ def analyze_unidirectional_flows(raw_csv: bytes) -> TrafficAnalysis:
                             ),
                             severity="high",
                             evidence={
-                                "fft_peak_to_mean_ratio": round(
-                                    peak_magnitude / mean_magnitude, 2
-                                ),
+                                "fft_peak_to_mean_ratio": round(peak_magnitude / mean_magnitude, 2),
                                 "dominant_period_ms": c2_dominant_period_ms,
                                 "iat_samples_analyzed": len(iat_values),
                                 "detection_method": "FFT_autocorrelation_periodicity",
@@ -355,11 +353,13 @@ def analyze_unidirectional_flows(raw_csv: bytes) -> TrafficAnalysis:
                 ent = _label_entropy(query)
                 if ent >= _DGA_ENTROPY_THRESHOLD:
                     dga_detected = True
-                    high_entropy_queries.append({
-                        "entropy_bits": round(ent, 3),
-                        "label_length": len(label),
-                        "source_ip_hash": hex(hash(src_ip) & 0xFFFFFFFF),
-                    })
+                    high_entropy_queries.append(
+                        {
+                            "entropy_bits": round(ent, 3),
+                            "label_length": len(label),
+                            "source_ip_hash": hex(hash(src_ip) & 0xFFFFFFFF),
+                        }
+                    )
         if dga_detected:
             indicators.append(
                 TrafficIndicator(

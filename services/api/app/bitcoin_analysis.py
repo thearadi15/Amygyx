@@ -135,7 +135,7 @@ def analyze_bitcoin_transfers(raw_csv: bytes) -> BitcoinAnalysis:
     amounts: list[Decimal] = []
     rows_processed = 0
     unique_addresses: set[str] = set()
-    tx_groups: dict[str, _TxGroup] = {}   # txid -> grouped data
+    tx_groups: dict[str, _TxGroup] = {}  # txid -> grouped data
 
     try:
         reader = csv.DictReader(io.StringIO(text, newline=""), strict=True)
@@ -327,9 +327,7 @@ def analyze_bitcoin_transfers(raw_csv: bytes) -> BitcoinAnalysis:
     # -------------------------------------------------------------------------
     peeling_hop_count = 0
     for addr in unique_addresses:
-        received_from_count = (
-            len(incoming[addr].counterparties) if addr in incoming else 0
-        )
+        received_from_count = len(incoming[addr].counterparties) if addr in incoming else 0
         sent_to_count = len(outgoing[addr].counterparties) if addr in outgoing else 0
         if received_from_count == 1 and sent_to_count == 1:
             peeling_hop_count += 1

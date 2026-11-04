@@ -4,15 +4,7 @@ interface LoginPageProps {
   onLogin: (user: { name: string; email: string; role: string; tenant: string }) => void;
 }
 
-const ADMIN_DEV_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDMiLCJ0ZW5hbnRfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJlbWFpbCI6ImFkbWluQGFteWd5eC5pbyIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImNpcC1sb2NhbCIsImF1ZCI6ImNpcCIsImlhdCI6MTc5MjA0ODE0MCwibmJmIjoxNzkyMDQ4MTQwLCJleHAiOjE3OTIwNTE3NDB9.5TcEZlT32H26_Do23xEfuZ_3IVBdbzvdvZ6aaJI37hU';
-const ANALYST_DEV_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCJ0ZW5hbnRfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJlbWFpbCI6ImFuYWx5c3RAc3ludGhldGljLmV4YW1wbGUudGVzdCIsInJvbGUiOiJhbmFseXN0IiwiaXNzIjoiY2lwLWxvY2FsIiwiYXVkIjoiY2lwIiwiaWF0IjoxNzkyMDQ4MTQwLCJuYmYiOjE3OTIwNDgxNDAsImV4cCI6MTc5MjA1MTc0MH0.FBeQs4Fc0nwMJZ-f0abG9a1e-SsZ_Pm9_4f0CnsHTO8';
-
-/* Demo credentials with genuine signed API access tokens */
-const DEMO_USERS: Record<string, { password: string; name: string; role: string; tenant: string; token: string }> = {
-  'admin@amygyx.io': { password: 'Admin@2026', name: 'Arjun Sharma', role: 'SOC Analyst — L3', tenant: 'NTRO-GOV-01', token: ADMIN_DEV_TOKEN },
-  'analyst@amygyx.io': { password: 'Analyst@2026', name: 'Priya Mehta', role: 'Threat Intelligence', tenant: 'CERT-IN-02', token: ANALYST_DEV_TOKEN },
-  'demo@amygyx.io': { password: 'Demo@2026', name: 'Demo User', role: 'Read-Only Viewer', tenant: 'SANDBOX-00', token: ANALYST_DEV_TOKEN },
-};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 /* Animated threat globe canvas */
 function ThreatGlobe() {
@@ -136,69 +128,47 @@ function ThreatGlobe() {
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mfaStep, setMfaStep] = useState(false);
-  const [mfaCode, setMfaCode] = useState('');
-  const [pendingUser, setPendingUser] = useState<{ name: string; email: string; role: string; tenant: string } | null>(null);
 
   const statCards = [
-    { label: 'Threats Blocked', value: '3,847', icon: '🛡️' },
-    { label: 'AI Modules Active', value: '10 / 10', icon: '🤖' },
-    { label: 'Avg Detection Time', value: '1.2s', icon: '⚡' },
-    { label: 'SOC2 Certified', value: 'Active', icon: '✅' },
+    { label: 'Analysis surfaces', value: '10', icon: '◎' },
+    { label: 'API mode', value: 'Local / OIDC', icon: '◈' },
+    { label: 'Findings', value: 'Tenant-scoped', icon: '◇' },
+    { label: 'Data handling', value: 'Bounded uploads', icon: '⌁' },
   ];
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const user = DEMO_USERS[email.toLowerCase()];
-      if (!user || user.password !== password) {
-        setError('Invalid credentials. Try demo@amygyx.io / Demo@2026');
-        return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${accessToken.trim()}` },
+      });
+      if (!response.ok) {
+        throw new Error(response.status === 401 ? 'The access token was rejected by the API.' : 'Unable to validate the access token.');
       }
-      setPendingUser({ name: user.name, email, role: user.role, tenant: user.tenant });
-      setMfaStep(true);
-    }, 1200);
-  }
-
-  function handleMfa(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    if (mfaCode !== '123456' && mfaCode !== '000000') {
-      setError('Invalid MFA code. Use 123456 for demo.');
-      return;
-    }
-    if (pendingUser) {
-      const match = DEMO_USERS[pendingUser.email.toLowerCase()];
-      if (match) {
-        localStorage.setItem('cip_access_token', match.token);
-      }
-      localStorage.setItem('cip_user', JSON.stringify(pendingUser));
-      onLogin(pendingUser);
-    }
-  }
-
-  function handleSSO() {
-    setLoading(true);
-    setTimeout(() => {
+      const member = await response.json();
+      const user = {
+        name: member.email?.split('@')[0] ?? 'Authenticated analyst',
+        email: member.email,
+        role: member.role,
+        tenant: member.tenant_id,
+      };
+      localStorage.setItem('cip_access_token', accessToken.trim());
+      localStorage.setItem('cip_user', JSON.stringify(user));
+      onLogin(user);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Authentication failed.');
+    } finally {
       setLoading(false);
-      const ssoUser = { name: 'SSO User', email: 'sso@amygyx.io', role: 'SSO Analyst', tenant: 'AZURE-AD-01' };
-      localStorage.setItem('cip_access_token', ADMIN_DEV_TOKEN);
-      localStorage.setItem('cip_user', JSON.stringify(ssoUser));
-      onLogin(ssoUser);
-    }, 1400);
+    }
   }
 
   return (
     <div className="login-root">
-      {/* Left panel */}
       <div className="login-left">
         <div className="login-card">
           <div className="login-logo">
@@ -208,111 +178,47 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               <div className="login-brand-sub">Cyber Intelligence Platform</div>
             </div>
           </div>
-
-          {!mfaStep ? (
-            <>
-              <p className="login-welcome">Welcome back. Sign in to your SOC workspace.</p>
-              <form onSubmit={handleLogin} className="login-form">
-                <div className="login-field">
-                  <label htmlFor="lf-email">Email address</label>
-                  <input
-                    id="lf-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="analyst@amygyx.io"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="login-field">
-                  <label htmlFor="lf-pwd">Password</label>
-                  <div className="pwd-wrap">
-                    <input
-                      id="lf-pwd"
-                      type={showPwd ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      placeholder="••••••••••"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      required
-                    />
-                    <button type="button" className="pwd-toggle" onClick={() => setShowPwd(v => !v)} tabIndex={-1}>
-                      {showPwd ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                </div>
-                <div className="login-options">
-                  <label className="remember-me">
-                    <input type="checkbox" /> Remember this device
-                  </label>
-                  <a href="#forgot" className="forgot-link" onClick={e => e.preventDefault()}>Forgot password?</a>
-                </div>
-                {error && <div className="login-error">{error}</div>}
-                <button type="submit" className="login-btn" disabled={loading}>
-                  {loading ? <span className="spin">⟳</span> : '→'}&nbsp;
-                  {loading ? 'Authenticating…' : 'Sign In'}
-                </button>
-              </form>
-              <div className="sso-divider"><span>or continue with SSO</span></div>
-              <button className="sso-btn" onClick={handleSSO} disabled={loading}>
-                <svg width="18" height="18" viewBox="0 0 21 21"><rect width="10" height="10" fill="#F25022"/><rect x="11" width="10" height="10" fill="#7FBA00"/><rect y="11" width="10" height="10" fill="#00A4EF"/><rect x="11" y="11" width="10" height="10" fill="#FFB900"/></svg>
-                Sign in with Microsoft
-              </button>
-              <div className="login-footer-note">
-                🔒 Access restricted to authorised personnel. All sessions are audited and encrypted (TLS 1.3).
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="mfa-badge">🔐 Multi-Factor Authentication</div>
-              <p className="login-welcome">We sent a 6-digit code to <strong>{pendingUser?.email}</strong>. Enter it below to continue.</p>
-              <p style={{ fontSize: 10, color: '#5a7a6a', margin: '-8px 0 18px' }}>Demo: use code <code style={{ color: '#49e2c2' }}>123456</code></p>
-              <form onSubmit={handleMfa} className="login-form">
-                <div className="login-field">
-                  <label htmlFor="lf-mfa">Authentication Code</label>
-                  <input
-                    id="lf-mfa"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={mfaCode}
-                    onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))}
-                    autoFocus
-                    required
-                    style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: 20 }}
-                  />
-                </div>
-                {error && <div className="login-error">{error}</div>}
-                <button type="submit" className="login-btn">Verify & Enter →</button>
-                <button type="button" className="sso-btn" style={{ marginTop: 8 }} onClick={() => { setMfaStep(false); setMfaCode(''); setError(''); }}>← Back to login</button>
-              </form>
-            </>
-          )}
+          <p className="login-welcome">Sign in with an API access token issued by your configured identity provider.</p>
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="login-field">
+              <label htmlFor="lf-token">Access token</label>
+              <input
+                id="lf-token"
+                type="password"
+                autoComplete="off"
+                placeholder="Paste an access token"
+                value={accessToken}
+                onChange={(event) => setAccessToken(event.target.value)}
+                required
+              />
+            </div>
+            {error && <div className="login-error">{error}</div>}
+            <button type="submit" className="login-btn" disabled={loading || !accessToken.trim()}>
+              {loading ? 'Validating…' : 'Continue →'}
+            </button>
+          </form>
+          <div className="login-footer-note">
+            🔒 Tokens are validated by the API. Development tokens are for local use only.
+          </div>
         </div>
         <div className="login-compliance">
-          <span>SOC 2 Type II</span><span>ISO 27001</span><span>DPDPA Compliant</span><span>CERT-In Ready</span>
+          <span>Tenant-scoped</span><span>Audit enabled</span><span>Offline-capable</span>
         </div>
       </div>
 
-      {/* Right panel */}
       <div className="login-right">
-        <div className="login-globe-wrap">
-          <ThreatGlobe />
-        </div>
+        <div className="login-globe-wrap"><ThreatGlobe /></div>
         <div className="login-stats-grid">
-          {statCards.map(s => (
-            <div className="login-stat-card" key={s.label}>
-              <div className="login-stat-icon">{s.icon}</div>
-              <div className="login-stat-value">{s.value}</div>
-              <div className="login-stat-label">{s.label}</div>
+          {statCards.map((stat) => (
+            <div className="login-stat-card" key={stat.label}>
+              <div className="login-stat-icon">{stat.icon}</div>
+              <div className="login-stat-value">{stat.value}</div>
+              <div className="login-stat-label">{stat.label}</div>
             </div>
           ))}
         </div>
         <p className="login-right-tagline">
-          AI-Powered Threat Intelligence · 10 SIH 2026 Modules · Real-Time Detection
+          AI-Powered Cyber Intelligence · Rules, statistical models, and integrations
         </p>
       </div>
     </div>

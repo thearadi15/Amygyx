@@ -271,7 +271,6 @@ def analyze_email(raw_message: bytes) -> EmailAnalysis:
         _u_proba = float(_u_nb.predict_proba(_u_tfidf.transform([lower_text]))[0][1])
         urgency_score = round(min(1.0, max(0.0, _u_proba)), 4)
 
-
         lookalike_detected = bool(
             reply_to_domain and sender_domain and reply_to_domain != sender_domain
         )

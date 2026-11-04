@@ -162,12 +162,12 @@ def test_analyzer_rejects_empty_flow_records() -> None:
 
 def test_ddos_flood_concentration_detected() -> None:
     """SIH26145: DDoS source-IP entropy/concentration detector fires on flood fixture."""
-    result = analyze_unidirectional_flows(
-        (FIXTURES / "synthetic_ddos_flood.csv").read_bytes()
-    )
+    result = analyze_unidirectional_flows((FIXTURES / "synthetic_ddos_flood.csv").read_bytes())
     rule_ids = {ind.rule_id for ind in result.indicators}
     assert "network.volumetric-flood-concentration" in rule_ids
-    flood_ind = next(i for i in result.indicators if i.rule_id == "network.volumetric-flood-concentration")
+    flood_ind = next(
+        i for i in result.indicators if i.rule_id == "network.volumetric-flood-concentration"
+    )
     assert flood_ind.severity == "high"
     assert flood_ind.evidence["dominant_source_flow_fraction"] >= 0.80
     assert "source_ip_entropy_bits" in flood_ind.evidence
@@ -177,12 +177,12 @@ def test_ddos_flood_concentration_detected() -> None:
 
 def test_c2_beacon_periodicity_detected() -> None:
     """SIH26145: Botnet C2 FFT periodicity detector fires on synthetic beacon fixture."""
-    result = analyze_unidirectional_flows(
-        (FIXTURES / "synthetic_c2_beacon.csv").read_bytes()
-    )
+    result = analyze_unidirectional_flows((FIXTURES / "synthetic_c2_beacon.csv").read_bytes())
     rule_ids = {ind.rule_id for ind in result.indicators}
     assert "network.botnet-c2-beacon-periodicity" in rule_ids
-    c2_ind = next(i for i in result.indicators if i.rule_id == "network.botnet-c2-beacon-periodicity")
+    c2_ind = next(
+        i for i in result.indicators if i.rule_id == "network.botnet-c2-beacon-periodicity"
+    )
     assert c2_ind.severity == "high"
     assert c2_ind.evidence["iat_samples_analyzed"] >= 8
     assert c2_ind.evidence["fft_peak_to_mean_ratio"] >= 4.0
@@ -192,9 +192,7 @@ def test_c2_beacon_periodicity_detected() -> None:
 
 def test_dga_dns_tunneling_entropy_detected() -> None:
     """SIH26145: DGA Shannon entropy detector fires on high-entropy DNS query labels."""
-    result = analyze_unidirectional_flows(
-        (FIXTURES / "synthetic_dga.csv").read_bytes()
-    )
+    result = analyze_unidirectional_flows((FIXTURES / "synthetic_dga.csv").read_bytes())
     rule_ids = {ind.rule_id for ind in result.indicators}
     assert "network.dga-dns-tunneling-entropy" in rule_ids
     dga_ind = next(i for i in result.indicators if i.rule_id == "network.dga-dns-tunneling-entropy")
@@ -207,12 +205,12 @@ def test_dga_dns_tunneling_entropy_detected() -> None:
 
 def test_exfiltration_byte_ratio_detected() -> None:
     """SIH26145: Data exfiltration asymmetric byte-ratio detector fires on exfil fixture."""
-    result = analyze_unidirectional_flows(
-        (FIXTURES / "synthetic_exfiltration.csv").read_bytes()
-    )
+    result = analyze_unidirectional_flows((FIXTURES / "synthetic_exfiltration.csv").read_bytes())
     rule_ids = {ind.rule_id for ind in result.indicators}
     assert "network.data-exfiltration-asymmetry" in rule_ids
-    exfil_ind = next(i for i in result.indicators if i.rule_id == "network.data-exfiltration-asymmetry")
+    exfil_ind = next(
+        i for i in result.indicators if i.rule_id == "network.data-exfiltration-asymmetry"
+    )
     assert exfil_ind.severity == "high"
     assert exfil_ind.evidence["suspicious_flow_count"] >= 1
     assert exfil_ind.evidence["total_suspicious_outbound_bytes"] > 0
@@ -222,9 +220,7 @@ def test_exfiltration_byte_ratio_detected() -> None:
 
 def test_optional_columns_backward_compatible() -> None:
     """Old CSVs without optional columns continue to work without errors."""
-    result = analyze_unidirectional_flows(
-        (FIXTURES / "synthetic_routine.csv").read_bytes()
-    )
+    result = analyze_unidirectional_flows((FIXTURES / "synthetic_routine.csv").read_bytes())
     assert result.rows_processed == 2
     assert result.threat_summary is not None
     assert "Requires iat_mean_ms column" in result.threat_summary["botnet_c2_periodicity_status"]
